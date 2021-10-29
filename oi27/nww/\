@@ -1,0 +1,96 @@
+#include<cstdio>
+#include<cmath>
+#include<vector>
+#include<utility>
+#include<algorithm>
+using namespace std;
+typedef long long ll;
+const double epsilon = 1e-8;
+
+struct iii{
+	ll lcm;
+	int a, b;
+	iii(ll lcm, int a, int b){
+		this->lcm=lcm;
+		this->a=a;
+		this->b=b;
+	}
+};
+vector<iii> V;
+
+ll gcd(ll a, ll b){
+	if(b==0)return a;
+	return gcd(b, a%b);
+}
+
+bool comp(iii a, iii b){
+	if(a.lcm == b.lcm){
+		if(a.a == b.a)return a.b < b.b;
+		return a.a < b.a;
+	}
+	return a.lcm < b.lcm;
+}
+
+iii lower_bound(ll x){
+	int l=0, r=V.size()-1;
+	if(V[l].lcm == x)return V[l];
+
+	while(l+1<r){
+		int mid = (l+r)/2;
+		if(V[mid].lcm >= x)r=mid;
+		else l=mid;
+	}
+	if(V[r].lcm == x)return V[r];
+	return iii(x, -1, -1);
+}
+
+void preprocess(){
+	for(int i=1;i<1e6*1.5;i++){
+		ll nww = i;
+		for(int j=i+1;j<=i+45;j++){
+			if(log10(nww)+log10(j)-log10(gcd(nww,j)) > 18.0)break;
+
+			nww *= j/gcd(nww, j);
+			if(j-i>=2)V.push_back(iii(nww, i, j));
+		}
+	}
+	sort(V.begin(), V.end(), comp);
+	//for(auto x : V)printf("%lld %d %d\n", x.lcm, x.a, x.b);
+}
+
+bool f(long long x){
+	if(x%2==1 && x!=1)return false;
+	ll fl = floor(sqrt(x));
+	ll cei = ceil(sqrt(x));
+	iii two = iii(fl*cei, fl, cei);
+
+	iii more = lower_bound(x);
+	if(two.lcm!=x || two.a==two.b){
+		if(more.a == -1)return false;
+		printf("%d %d\n", more.a, more.b);
+		return true;
+	}
+	else{
+		if(more.a == -1){
+			printf("%d %d\n", two.a, two.b);
+			return true;
+		}
+		else{
+			if(comp(two, more))printf("%d %d\n", two.a, two.b);
+			else printf("%d %d\n", more.a, more.b);
+			return true;
+		}
+	}
+}
+
+int main(){
+
+	preprocess();
+	int q;
+	long long int M;
+	scanf("%d", &q);
+	while(q--){
+		scanf("%lld", &M);
+		if(!f(M))printf("NIE\n");
+	}
+}
